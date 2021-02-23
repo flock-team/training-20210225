@@ -1,7 +1,8 @@
 const { src, dest, parallel, series, watch } = require('gulp');
 const plumber = require('gulp-plumber');
 const notify = require('gulp-notify');
-const pug = require('gulp-pug');
+const ejs = require('gulp-ejs');
+const rename = require('gulp-rename');
 const sass = require('gulp-dart-sass');
 const postcss = require('gulp-postcss');
 const autoprefixer = require('autoprefixer');
@@ -18,23 +19,22 @@ const rimraf = require('rimraf');
 const browserSync = require('browser-sync').create();
 
 const paths = {
-  pug: './src/pug/**/*.pug',
+  ejs: './src/ejs/**/*.ejs',
   scss: './src/scss/**/*.scss',
   js: './src/js/**/*.js',
   image: './src/images/**/*',
 };
 
 const html = () => {
-  return src([
-      paths.pug,
-      '!**/*_*'
-    ])
-    .pipe(plumber({ errorHandler: notify.onError("Error: <%= error.message %>") }))
-    .pipe(pug( {
-      basedir: './src/pug',
-      pretty: true
-    }))
-    .pipe(dest('dist/'));
+  return src([paths.ejs, '!/**/_*.ejs'])
+    .pipe(
+      plumber({
+        errorHandler: notify.onError('Error: <%= error.message %>'),
+      })
+    )
+    .pipe(ejs())
+    .pipe(rename({ extname: '.html' }))
+    .pipe(dest('./dist'));
 };
 
 const css = () => {
@@ -75,7 +75,7 @@ const image = () => {
 };
 
 const watchFiles = () => {
-  watch(paths.pug, function(cb) {
+  watch(paths.ejs, function(cb) {
     html();
     cb();
   });
